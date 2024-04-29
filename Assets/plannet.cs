@@ -8,8 +8,6 @@ public class Planet : MonoBehaviour
     [SerializeField, HideInInspector]
     MeshFilter[] meshFilters;
     TerrainFace[] terrainFaces;
-    public Texture2D heightMapTexture; // Add this field to assign the height map texture
-    public float maxHeight = 10f; // Add this field for controlling maximum height
 
     private void OnValidate()
     {
@@ -39,8 +37,7 @@ public class Planet : MonoBehaviour
                 meshFilters[i].sharedMesh = new Mesh();
             }
 
-            // Pass the maxHeight value to the TerrainFace constructor
-            terrainFaces[i] = new TerrainFace(meshFilters[i].sharedMesh, resolution, directions[i], heightMapTexture, maxHeight);
+            terrainFaces[i] = new TerrainFace(meshFilters[i].sharedMesh, resolution, directions[i]);
         }
     }
 
