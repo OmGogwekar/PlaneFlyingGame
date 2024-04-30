@@ -16,7 +16,9 @@ public class Planet : MonoBehaviour
     private void OnValidate()
     {
         //Initialize();
-        GeneratePlanet();
+        //GeneratePlanet();
+
+        GenerateIcosphere();
     }
 
     void Initialize()
@@ -90,6 +92,29 @@ public class Planet : MonoBehaviour
         meshFilter.sharedMesh.uv = planetMeshData.uv.ToArray();
         //meshFilter.sharedMesh.RecalculateNormals(); // Recalculate normals for proper lighting
         SmoothNormals(meshFilter.sharedMesh); // Smooth normals for better lighting
+    }
+
+    private void GenerateIcosphere()
+    {
+        MeshFilter meshFilter = GetComponent<MeshFilter>();
+        if (meshFilter == null)
+        {
+            meshFilter = gameObject.AddComponent<MeshFilter>();
+        }
+
+        MeshRenderer renderer = gameObject.GetComponent<MeshRenderer>();
+        if (renderer == null)
+        {
+            renderer = gameObject.AddComponent<MeshRenderer>();
+            renderer.material = new Material(Shader.Find("Standard")); // Set the material
+        }
+
+        MeshGenerator generator = new MeshGenerator();
+        meshFilter.sharedMesh = generator.GenerateIcosphere(5);
+
+        List<Vector2> uv = new List<Vector2>();
+        CalculateUVs(new List<Vector3>(meshFilter.sharedMesh.vertices), uv);
+        meshFilter.sharedMesh.uv = uv.ToArray();
     }
 
     private struct MeshData
