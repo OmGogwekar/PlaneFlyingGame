@@ -66,7 +66,7 @@ public class MeshGenerator : MonoBehaviour
         return meshData;
     }
 
-    public Mesh GenerateIcosphere(int recursionLevel)
+    public Mesh GenerateIcosphere(int recursionLevel, float radius)
     {
         float phi = (1.0f + Mathf.Sqrt(5.0f)) / 2.0f;
 
@@ -120,7 +120,14 @@ public class MeshGenerator : MonoBehaviour
             triangles = newTriangles;
         }
 
+        //multiple radius with vertex position
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            vertices[i] *= radius;
+        }
+
         Mesh mesh = new Mesh();
+        mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
         mesh.RecalculateNormals();  // This helps in smoothing the lighting

@@ -1,24 +1,36 @@
 using System.Collections.Generic;
 using UnityEngine;
 using static UnityEngine.Mesh;
-
+ 
 public class Planet : MonoBehaviour
 {
     [Range(2, 256)]
     public int resolution = 10;
 
+    [Range(1, 10)]
+    public int recursionLevel = 6;
+
+    [Range(1, 200)]
+    public float radius = 1;
+
+    [Range(0, 1)]
+    public float threshold = 0.2f;
+    [Range(0, 5)]
+    public float exaggerationFactor = 2.0f;
+
     [SerializeField, HideInInspector]
     MeshFilter[] meshFilters;
     TerrainFace[] terrainFaces;
     public Texture2D heightMapTexture; // Add this field to assign the height map texture
-    public float maxHeight = 10f; // Add this field for controlling maximum height
-
+    public float maxHeight = 0.1f;  // Add this field for controlling maximum height
+     
     private void OnValidate()
     {
         //Initialize();
-        //GeneratePlanet();
+        //GeneratePlanet(); 
 
         GenerateIcosphere();
+        ApplyHeightmapToVertices(GetComponent<MeshFilter>().sharedMesh, heightMapTexture, maxHeight, threshold, exaggerationFactor);
     }
 
     void Initialize()
@@ -110,7 +122,7 @@ public class Planet : MonoBehaviour
         }
 
         MeshGenerator generator = new MeshGenerator();
-        meshFilter.sharedMesh = generator.GenerateIcosphere(5);
+        meshFilter.sharedMesh = generator.GenerateIcosphere(recursionLevel, radius);
 
         List<Vector2> uv = new List<Vector2>();
         CalculateUVs(new List<Vector3>(meshFilter.sharedMesh.vertices), uv);
@@ -137,7 +149,7 @@ public class Planet : MonoBehaviour
         foreach (Vector3 vertex in vertices)
         {
             float u = 0.5f + (Mathf.Atan2(vertex.z, vertex.x) / (2 * Mathf.PI));
-            float v = 0.5f - (Mathf.Asin(vertex.y / vertex.magnitude) / Mathf.PI);
+            float v = 0.5f + (Mathf.Asin(vertex.y / vertex.magnitude) / Mathf.PI);
             uv.Add(new Vector2(u, v));
         }
     }
@@ -178,5 +190,36 @@ public class Planet : MonoBehaviour
             sum += vec;
         return sum / vectors.Count;
     }
+
+    void ApplyHeightmapToVertices(Mesh mesh, Texture2D heightMap, float heightScale, float threshold = 0, float exaggerationFactor = 0)
+    {
+
+        Vector3[] vertices = mesh.vertices;
+        Vector2[] uv = mesh.uv;
+        Color[] heightMapColors = heightMap.GetPixels();
+
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            float height = heightMap.GetPixelBilinear(uv[i].x, uv[i].y).grayscale;
+
+            // vertices[i] += vertices[i].normalized * height * heightScale; -> simple height scaling
+
+            if (height > threshold)
+            {
+                // Apply exaggerated height scale for values above the threshold
+                vertices[i] += vertices[i].normalized * (height * heightScale * exaggerationFactor);
+            }
+            else
+            {
+                // Push down vertices below the threshold
+                // You might want to adjust the calculation below if the push down effect is not suitable
+                vertices[i] -= vertices[i].normalized * ((threshold - height) * heightScale * 0.5f);
+            }
+        }
+
+        mesh.vertices = vertices;
+        mesh.RecalculateNormals();
+    }
+
 
 }

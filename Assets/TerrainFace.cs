@@ -82,9 +82,6 @@ public class TerrainFace : MonoBehaviour
     }
 
 
-
-
-
     public static Vector3 PointOnCubeToPointOnSphere(Vector3 p)
     {
         float x2 = p.x * p.x;
@@ -97,3 +94,5 @@ public class TerrainFace : MonoBehaviour
         return new Vector3(x, y, z);
     }
 }
+
+
